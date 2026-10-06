@@ -16,11 +16,13 @@ class FileType(Enum):
     SH = "BASH"
 
 
-def index(max_chunk_size: int = 2000):
+def find_files():
+
     md_files = []
     py_files = []
     sh_files = []
-    for root, dirs, files in os.walk("data"):
+    root_dir = "data"
+    for root, dirs, files in os.walk(root_dir):
         for file in files:
             file_path = root + "/" + file
             if (Path(file_path).suffix == ".py"):
@@ -29,10 +31,16 @@ def index(max_chunk_size: int = 2000):
                 md_files.append(file_path)
             elif (Path(file_path).suffix == ".sh"):
                 sh_files.append(file_path)
+    file_paths = {FileType.PY.value: py_files,
+                  FileType.MD.value: md_files,
+                  FileType.SH.value: sh_files}
+    return file_paths
+
+
+def index(max_chunk_size: int = 2000):
+    file_paths = find_files()
     chunk(max_chunk_size,
-          **{FileType.PY.value: py_files,
-             FileType.MD.value: md_files,
-             FileType.SH.value: sh_files})
+          **file_paths)
 
 
 def chunk(max_chunk_size: int, **files):
@@ -75,5 +83,4 @@ def create_sources(files: list[str],
                                    len(doc.page_content) - 1)
             sources.append(source)
             idx += len(doc.page_content)
-            print(source)
     return sources
