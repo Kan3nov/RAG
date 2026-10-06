@@ -1,11 +1,10 @@
-from pydantic import BaseModel
-from typing import Field
-from uuid import uuid4
-
-
-class Chunk(BaseModel):
-    content: str
-    source: MinimalSource
+try:
+    from pydantic import BaseModel, Field
+    from uuid import uuid4
+except Exception as e:
+    print("=" * 5, "Import Error", "=" * 5)
+    print(e)
+    exit()
 
 
 class MinimalSource(BaseModel):
