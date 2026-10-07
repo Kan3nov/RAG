@@ -13,6 +13,9 @@
     - https://github.com/google/python-fire/blob/master/docs/guide.md
 - BM25 vs. TF-IDF
     - https://medium.com/@jinmochong/what-is-bm25-comparison-with-tf-idf-and-beyond-5a740479214b
+- BM25s
+    - https://huggingface.co/blog/xhluca/bm25s
+
 
 
 ## AI Usage

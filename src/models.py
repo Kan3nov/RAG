@@ -9,8 +9,13 @@ except Exception as e:
 
 class MinimalSource(BaseModel):
     file_path: str
+    content: str
     first_character_index: int
     last_character_index: int
+
+    def __str__(self):
+        return (self.file_path +
+                f" [{self.first_character_index}:{self.last_character_index}]")
 
 
 class UnansweredQuestion(BaseModel):

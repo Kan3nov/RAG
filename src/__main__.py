@@ -1,17 +1,10 @@
 try:
     from fire import Fire
     from indexing import index
+    from searching import search_dataset, search
 except Exception as e:
     print("=" * 5, "Import Error", "=" * 5)
     print(e)
-
-
-def search(query: str, k: int):
-    ...
-
-
-def search_dataset(dataset_path: str, k: int, save_dir: str):
-    ...
 
 
 def answer(query: str, k: int):
