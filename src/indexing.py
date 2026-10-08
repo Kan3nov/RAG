@@ -56,7 +56,7 @@ def index(max_chunk_size: int = 2000) -> None:
           f" chunks under {index_dir}")
 
 
-def indexed(max_chunk_size: int = 2000) -> None:
+def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
     file_paths = find_files()
     sources = chunk(max_chunk_size, **file_paths)
     corpus = [src.content for src in sources]

@@ -2,17 +2,11 @@ try:
     from fire import Fire
     from indexing import index
     from searching import search_dataset, search
+    from answering import answer, answer_dataset
 except Exception as e:
     print("=" * 5, "Import Error", "=" * 5)
     print(e)
-
-
-def answer(query: str, k: int):
-    ...
-
-
-def answer_dataset(std_search_res_path: str, save_dir: str):
-    ...
+    exit()
 
 
 def evaluate(std_search_res_path: str, dataset_path: str):

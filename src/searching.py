@@ -1,21 +1,31 @@
 try:
     import bm25s
     import json
+    from tqdm import tqdm
     from config import index_dir
     from pathlib import Path
     from indexing import indexed
     from models import (MinimalSource, UnansweredQuestion,
                         MinimalSearchResults, StudentSearchResults,
-                        AnsweredQuestion)
+                        RagDataset)
     from pydantic import TypeAdapter
+    from utils import print_e
 except Exception as e:
     print("=" * 5, "Import Error", "=" * 5)
     print(e)
+    exit()
 
 
 def search(query: str, k: int) -> list[MinimalSource]:
     sources = indexed()
     retriever = bm25s.BM25.load(index_dir, load_corpus=True)
+    top_sources = search_query(query, k, retriever, sources)
+    return top_sources
+
+
+def search_query(query: str, k: int,
+                 retriever: bm25s.BM25,
+                 sources: list[MinimalSource]) -> list[MinimalSource]:
     query_tokens = bm25s.tokenize(query)
     docs, scores = retriever.retrieve(query_tokens, k=k)
     top_sources = []
@@ -30,7 +40,7 @@ def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
         with open(dataset_path, "r") as f:
             content = f.read()
             adapter = TypeAdapter(
-                dict[str, list[UnansweredQuestion | AnsweredQuestion]])
+                dict[str, list[UnansweredQuestion]])
             if (adapter.validate_json(content)):
                 questions_dict = json.loads(content)["rag_questions"]
                 questions = []
@@ -38,24 +48,32 @@ def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
                     questions.append(UnansweredQuestion(
                         question_id=q["question_id"],
                         question=q["question"]))
+                q_dataset = RagDataset(rag_questions=questions)
     except Exception as e:
+        print_e()
         print("=" * 5, "Error opening dataset", "=" * 5)
         print(e)
         exit()
 
     search_results = []
-    for q in questions:
+    sources = indexed()
+    retriever = bm25s.BM25.load(index_dir, load_corpus=True)
+    for q in tqdm(q_dataset.rag_questions,
+                  desc="Sources Retrieval",
+                  unit="prompt"):
         min_srch_res = MinimalSearchResults(question_id=q.question_id,
                                             question=q.question,
-                                            retrieved_sources=search(
+                                            retrieved_sources=search_query(
                                                 q.question,
-                                                k)
+                                                k,
+                                                retriever,
+                                                sources)
                                             )
         search_results.append(min_srch_res)
     std_search_res = StudentSearchResults(search_results=search_results,
                                           k=k)
-    json_file = std_search_res.model_dump_json(indent=4)
     try:
+        json_file = std_search_res.model_dump_json(indent=4)
         if (not save_dir.endswith("/")):
             save_dir = save_dir + "/"
         save_dir += "search_results.json"
