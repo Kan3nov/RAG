@@ -2,11 +2,13 @@ vpath %.py src
 
 SCRIPT := uv run python -m src
 
-dataset_path ?= datasets_public/public/AnsweredQuestions/dataset_code_public.json
+dataset_path ?= datasets_public/public/UnansweredQuestions/dataset_code_public.json
 k ?= 5
-save_dir ?= data/output/search_results/answered/
+search_save_dir ?= data/output/search_results/unanswered/
+answer_save_dir ?= data.output/search_results_and_answer/search_results_and_answer.json
 query ?= "How to configure the OpenAI server?"
 max_chunk_size ?= 2000
+student_search_results_path ?= data/output/search_results/unanswered/search_results.json
 
 all: run
 
@@ -33,4 +35,10 @@ search:
 	$(SCRIPT) search --query $(query) -k $(k)
 
 search_dataset:
-	$(SCRIPT) search_dataset --dataset_path $(dataset_path) -k $(k) -save_dir $(save_dir)
+	$(SCRIPT) search_dataset --dataset_path $(dataset_path) -k $(k) --save_dir $(search_save_dir)
+
+answer:
+	$(SCRIPT) answer --query $(query) --k $(k)
+
+answer_dataset:
+	$(SCRIPT) answer_dataset --std_search_res_path $(student_search_results_path) --save_dir $(answer_save_dir)

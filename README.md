@@ -17,6 +17,9 @@
     - https://huggingface.co/blog/xhluca/bm25s
 - tqdm
     - https://youtu.be/n4E7of9BINo
+- Model Response Generation
+    - https://youtu.be/1h6lfzJ0wZw
+
 
 
 
