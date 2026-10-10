@@ -3,14 +3,11 @@ try:
     from indexing import index
     from searching import search_dataset, search
     from answering import answer, answer_dataset
+    from evaluation import evaluate
 except Exception as e:
     print("=" * 5, "Import Error", "=" * 5)
     print(e)
     exit()
-
-
-def evaluate(std_search_res_path: str, dataset_path: str):
-    ...
 
 
 if __name__ == "__main__":

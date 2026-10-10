@@ -86,14 +86,6 @@ def chunk(max_chunk_size: int, **files) -> list[MinimalSource]:
         language=Language.PYTHON, chunk_size=max_chunk_size, chunk_overlap=0)
     sources.extend(create_sources(files[FileType.PY.value], splitter))
 
-    splitter = RecursiveCharacterTextSplitter.from_language(
-        language=Language.PYTHON, chunk_size=max_chunk_size, chunk_overlap=0)
-    sources.extend(create_sources(files[FileType.SH.value], splitter))
-
-    splitter = RecursiveCharacterTextSplitter(chunk_size=max_chunk_size,
-                                              chunk_overlap=0)
-    sources.extend(create_sources(files[FileType.TXT.value], splitter))
-
     return sources
 
 

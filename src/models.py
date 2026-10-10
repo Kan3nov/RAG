@@ -9,7 +9,7 @@ except Exception as e:
 
 class MinimalSource(BaseModel):
     file_path: str
-    content: str
+    content: str = None
     first_character_index: int
     last_character_index: int
 
