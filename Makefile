@@ -4,11 +4,13 @@ SCRIPT := uv run python -m src
 
 dataset_path ?= datasets_public/public/UnansweredQuestions/dataset_code_public.json
 k ?= 5
-search_save_dir ?= data/output/search_results/unanswered/
-answer_save_dir ?= data.output/search_results_and_answer/search_results_and_answer.json
+search_save_dir ?= data/output/search_results/UnansweredQuestions/
+
 query ?= "How to configure the OpenAI server?"
 max_chunk_size ?= 2000
-student_search_results_path ?= data/output/search_results/unanswered/search_results.json
+
+student_search_results_path ?= data/output/search_results/UnansweredQuestions/dataset_code_public.json
+answer_save_dir ?= data/datasets/AnsweredQuestions/
 
 all: run
 

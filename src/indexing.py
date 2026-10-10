@@ -2,10 +2,11 @@ try:
     import os
     from pathlib import Path
     from enum import Enum
-    from config import index_dir
+    from config import index_dir, sources_file
     from langchain_text_splitters import (RecursiveCharacterTextSplitter,
                                           Language)
     import bm25s
+    import json
     from models import MinimalSource
 except Exception as e:
     print("=" * 5, "Import Error", "=" * 5)
@@ -66,6 +67,11 @@ def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
     index_files = Path(index_dir)
     index_files.parent.mkdir(parents=True, exist_ok=True)
     retriever.save(index_files)
+    sources_json = json.dumps(
+        [src.model_dump(mode="json") for src in sources], indent=4
+        )
+    with open(sources_file, "w") as f:
+        f.write(sources_json)
     return sources
 
 

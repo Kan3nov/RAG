@@ -2,9 +2,8 @@ try:
     import bm25s
     import json
     from tqdm import tqdm
-    from config import index_dir
+    from config import (index_dir, sources_file)
     from pathlib import Path
-    from indexing import indexed
     from models import (MinimalSource, UnansweredQuestion,
                         MinimalSearchResults, StudentSearchResults,
                         RagDataset)
@@ -16,9 +15,32 @@ except Exception as e:
     exit()
 
 
+def load_src_and_ret() -> tuple[list[MinimalSource], bm25s.BM25]:
+    try:
+        with open(sources_file, 'r') as f:
+            content = f.read()
+            sources = []
+            sources_json = json.loads(content)
+            for obj in sources_json:
+                sources.append(MinimalSource(
+                    file_path=obj["file_path"],
+                    content=obj["content"],
+                    first_character_index=obj["first_character_index"],
+                    last_character_index=obj["last_character_index"])
+                    )
+    except Exception as e:
+        print_e("Error Reading Sources File", e,
+                "Index sources before searching")
+    try:
+        retriever = bm25s.BM25.load(index_dir, load_corpus=True)
+    except Exception as e:
+        print_e("Error Loading Indexed Chunks", e,
+                "Index sources before searching")
+    return (sources, retriever)
+
+
 def search(query: str, k: int) -> list[MinimalSource]:
-    sources = indexed()
-    retriever = bm25s.BM25.load(index_dir, load_corpus=True)
+    sources, retriever = load_src_and_ret()
     top_sources = search_query(query, k, retriever, sources)
     return top_sources
 
@@ -36,6 +58,7 @@ def search_query(query: str, k: int,
 
 
 def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
+    save_file = save_dir + dataset_path[dataset_path.rfind("/") + 1:]
     try:
         with open(dataset_path, "r") as f:
             content = f.read()
@@ -50,14 +73,10 @@ def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
                         question=q["question"]))
                 q_dataset = RagDataset(rag_questions=questions)
     except Exception as e:
-        print_e()
-        print("=" * 5, "Error opening dataset", "=" * 5)
-        print(e)
-        exit()
+        print_e("Error Opening Questions Dataset", e)
 
+    sources, retriever = load_src_and_ret()
     search_results = []
-    sources = indexed()
-    retriever = bm25s.BM25.load(index_dir, load_corpus=True)
     for q in tqdm(q_dataset.rag_questions,
                   desc="Sources Retrieval",
                   unit="prompt"):
@@ -74,13 +93,11 @@ def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
                                           k=k)
     try:
         json_file = std_search_res.model_dump_json(indent=4)
-        if (not save_dir.endswith("/")):
-            save_dir = save_dir + "/"
-        save_dir += "search_results.json"
-        save_path = Path(save_dir)
+        save_path = Path(save_file)
         save_path.parent.mkdir(parents=True, exist_ok=True)
-        with open(save_dir, "w") as f:
+        with open(save_file, "w") as f:
             f.write(json_file)
+        print(f"Saved student_search_results to {save_file}")
     except Exception as e:
         print("=" * 5, "Error writing search results", "=" * 5)
         print(e)
