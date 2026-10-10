@@ -20,7 +20,7 @@ except Exception as e:
 set_verbosity_error()
 
 
-def answer(query: str, k: int):
+def answer(query: str, k: int) -> str:
     top_sources = search(query, k)
     response = answered(query, top_sources)
     return response
@@ -35,11 +35,16 @@ def answered(query: str, top_sources: list[MinimalSource]):
         "<|im_start|>assistant\n<think>\n</think>"
 
     tokenizer = AutoTokenizer.from_pretrained(model_name)
-    context_length = 32_768 - len(tokenizer(prompt)["input_ids"])
+    context_length = len(tokenizer.encode(prompt))
+    if (context_length >= 30_768):
+        prompt_tokens = tokenizer(prompt)["input_ids"]
+        prompt = tokenizer.decode(prompt_tokens[:30_768])
+
     model = pipeline("text-generation", model_name,
-                     max_new_tokens=context_length)
+                     max_new_tokens=2000)
     response = model(prompt)[0]["generated_text"][len(prompt) + 1:]
     response = response if response[0] != "\n" else response[1:]
+    return response
 
 
 def answer_dataset(std_search_res_path: str, save_dir: str) -> None:
@@ -60,6 +65,7 @@ def answer_dataset(std_search_res_path: str, save_dir: str) -> None:
             retrieved_sources=search_result.retrieved_sources,
             answer=answer(search_result.question, k))
         minimal_answers.append(min_answer)
+        print(minimal_answers[-1].answer)
     std_search_answer = StudentSearchResultsAndAnswer(
         search_results=minimal_answers,
         k=k)
