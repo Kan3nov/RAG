@@ -15,6 +15,8 @@ except Exception as e:
 
 
 class FileType(Enum):
+    """Supported source file categories for indexing."""
+
     PY = "PYTHON"
     MD = "MARKDOWN"
     TXT = "TEXT"
@@ -22,6 +24,14 @@ class FileType(Enum):
 
 
 def find_files() -> dict[str, list[str]]:
+    """Find all .py,.md,.txt,.sh files starting from the root directory
+
+    Args:
+        None
+    Returns:
+        dict[str, list[str]]: each file type is associated with its
+            corresponding file paths
+    """
 
     md_files = []
     txt_files = []
@@ -53,12 +63,26 @@ def find_files() -> dict[str, list[str]]:
 
 
 def index(max_chunk_size: int = 2000) -> None:
+    """Serve as a CLI for indexing source files
+
+    Args:
+        max_chunk_size: maximum limit for chunk length
+    Returns:
+        None
+    """
     sources = indexed(max_chunk_size)
     print(f"Ingestion complete! Indexed {len(sources)}" +
           f" chunks under {index_dir}")
 
 
 def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
+    """index all files and save the index into a pre-defined directory
+
+    Args:
+        max_chunk_size: maximum limit for chunk length
+    Returns:
+        list[MinimalSource]: all chunked sources
+    """
     file_paths = find_files()
     sources = chunk(max_chunk_size, **file_paths)
     corpus = [src.content for src in sources]
@@ -77,6 +101,14 @@ def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
 
 
 def chunk(max_chunk_size: int, **files: list[str]) -> list[MinimalSource]:
+    """Create a list of all chunks produced from the files
+
+    Args:
+        max_chunk_size: maximum limit for chunk length
+        files: paths of files to be split
+    Returns:
+        list[MinimalSource]: all chunked sources
+    """
     sources = []
 
     pbar = tqdm(total=sum([len(x) for x in files.values()]),
@@ -100,6 +132,15 @@ def chunk(max_chunk_size: int, **files: list[str]) -> list[MinimalSource]:
 def create_sources(files: list[str],
                    splitter: RecursiveCharacterTextSplitter,
                    pbar: tqdm) -> list[MinimalSource]:
+    """Split all files into chunks
+
+    Args:
+        files: paths of files to be split
+        splitter: the thing that splits file contents
+        pbar: bar to indicate chunking progress
+    Returns:
+        list[MinimalSource]: list of chunked sources
+    """
     sources = []
     for file in files:
         idx = 0

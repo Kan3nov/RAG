@@ -11,6 +11,15 @@ except Exception as e:
 
 
 def calc_recall(answer: MinimalSource, results: list[MinimalSource]) -> int:
+    """Find out whether there's an overlap between the answer's true source
+        and generated sources
+
+    Args:
+        answer: the true relevant source
+        results: all user-retrieved sources
+    Returns:
+        int: 1 if there is an overlap, 0 otherwise
+    """
     for source in results:
         diff = min(answer.last_character_index,
                    source.last_character_index) - \
@@ -27,6 +36,14 @@ def calc_recall(answer: MinimalSource, results: list[MinimalSource]) -> int:
 
 
 def evaluate(std_search_res_path: str, dataset_path: str) -> float:
+    """Calculate the overall recall of the program.
+
+    Args:
+        std_search_res_path: path of the user's search results
+        dataset_path: path of where the true sources are.
+    Returns:
+        float: recall value (between 0.0 and 1.0)
+    """
     try:
         with open(std_search_res_path, 'r') as f:
             content = f.read()

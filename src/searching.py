@@ -16,6 +16,15 @@ except Exception as e:
 
 
 def load_src_and_ret() -> tuple[list[MinimalSource], bm25s.BM25]:
+    """Load indexed source chunks and the BM25 retriever
+     for retrieval tasks.
+
+    Args:
+        None
+    Returns:
+        tuple[list[MinimalSource], bm25s.BM25]: indexed chunks and the
+            retriever used to search them
+    """
     try:
         with open(sources_file, 'r') as f:
             content = f.read()
@@ -40,6 +49,14 @@ def load_src_and_ret() -> tuple[list[MinimalSource], bm25s.BM25]:
 
 
 def search(query: str, k: int) -> list[MinimalSource]:
+    """Search the indexed source corpus for the top matching chunks.
+
+    Args:
+        query: text to search for
+        k: maximum number of matching chunks to return
+    Returns:
+        list[MinimalSource]: the top matching chunks
+    """
     if (k <= 0):
         print_e("Invalid K Value", None,
                 "K should be greater than zero")
@@ -54,6 +71,17 @@ def search(query: str, k: int) -> list[MinimalSource]:
 def search_query(query: str, k: int,
                  retriever: bm25s.BM25,
                  sources: list[MinimalSource]) -> list[MinimalSource]:
+    """Retrieve the most relevant source chunks for a query using BM25.
+
+    Args:
+        query: text to search for
+        k: maximum number of matching chunks to return
+        retriever: BM25 retriever indexed over the source corpus
+        sources: source chunks corresponding to the retriever's corpus
+    Returns:
+        list[MinimalSource]: the most relevant chunks, or an unknown-source
+            placeholder when no relevant chunks are found
+    """
     query_tokens = bm25s.tokenize(query)
     docs, scores = retriever.retrieve(query_tokens, k=k)
     score_list = scores.flatten().tolist()
@@ -70,6 +98,13 @@ def search_query(query: str, k: int,
 
 
 def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
+    """Search every question in a dataset and save the results as JSON.
+
+    Args:
+        dataset_path: path to the dataset containing questions
+        k: maximum number of matching chunks to retrieve per question
+        save_dir: directory in which to save the search results
+    """
     if (k <= 0):
         print_e("Invalid K Value", None,
                 "K should be greater than zero")
