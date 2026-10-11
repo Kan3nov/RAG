@@ -21,6 +21,12 @@ set_verbosity_error()
 
 
 def answer(query: str, k: int) -> str:
+    if (k <= 0):
+        print_e("Invalid K Value", None,
+                "K should be greater than zero")
+    elif (query == ""):
+        print_e("Invalid Query", None,
+                "Query can't be empty")
     top_sources = search(query, k)
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = pipeline("text-generation", model_name,
@@ -31,6 +37,9 @@ def answer(query: str, k: int) -> str:
 
 def answered(query: str, top_sources: list[MinimalSource], tokenizer: Any,
              model: TextGenerationPipeline):
+    if (top_sources[0].content == "None"):
+        return "Nonsensical query. Don't do that again !!"
+
     context = "\n".join([src.content for src in top_sources])
     prompt = \
         "<|im_start|>system\nYou are an AI assitant that answers " +\

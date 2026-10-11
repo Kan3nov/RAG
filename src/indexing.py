@@ -5,6 +5,7 @@ try:
     from config import index_dir, sources_file
     from langchain_text_splitters import (RecursiveCharacterTextSplitter,
                                           Language)
+    from tqdm import tqdm
     import bm25s
     import json
     from models import MinimalSource
@@ -78,25 +79,27 @@ def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
 def chunk(max_chunk_size: int, **files) -> list[MinimalSource]:
     sources = []
 
+    pbar = tqdm(total=sum([len(x) for x in files.values()]),
+                desc="Files chunking", unit="file")
     splitter = RecursiveCharacterTextSplitter.from_language(
         language=Language.MARKDOWN, chunk_size=max_chunk_size, chunk_overlap=0)
-    sources.extend(create_sources(files[FileType.MD.value], splitter))
+    sources.extend(create_sources(files[FileType.MD.value], splitter, pbar))
 
     splitter = RecursiveCharacterTextSplitter.from_language(
         language=Language.PYTHON, chunk_size=max_chunk_size, chunk_overlap=0)
-    sources.extend(create_sources(files[FileType.PY.value], splitter))
-    sources.extend(create_sources(files[FileType.SH.value], splitter))
+    sources.extend(create_sources(files[FileType.PY.value], splitter, pbar))
+    sources.extend(create_sources(files[FileType.SH.value], splitter, pbar))
 
     splitter = RecursiveCharacterTextSplitter(chunk_size=max_chunk_size,
                                               chunk_overlap=0)
-    sources.extend(create_sources(files[FileType.TXT.value], splitter))
-
+    sources.extend(create_sources(files[FileType.TXT.value], splitter, pbar))
+    pbar.close()
     return sources
 
 
 def create_sources(files: list[str],
-                   splitter: RecursiveCharacterTextSplitter
-                   ) -> list[MinimalSource]:
+                   splitter: RecursiveCharacterTextSplitter,
+                   pbar: tqdm) -> list[MinimalSource]:
     sources = []
     for file in files:
         idx = 0
@@ -120,4 +123,5 @@ def create_sources(files: list[str],
                                    last_character_index=lst_idx)
             sources.append(source)
             idx = lst_idx + 1
+        pbar.update(1)
     return sources

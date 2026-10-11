@@ -1,6 +1,7 @@
 vpath %.py src
 
 SCRIPT := uv run python -m src
+OP ?= index
 
 dataset_path ?= datasets_public/public/UnansweredQuestions/dataset_code_public.json
 
@@ -15,16 +16,16 @@ max_chunk_size ?= 2000
 student_search_results_path ?= data/output/search_results/UnansweredQuestions/dataset_code_public.json
 answer_save_dir ?= data/output/search_results_and_answer/UnansweredQuestions/
 
-all: run
-
-run: install
-	@uv run python -m src
+run: install index search_dataset
+	./moulinette/moulinette_pkg/moulinette-fedora evaluate_student_search_results \
+	data/output/search_results/UnansweredQuestions/dataset_code_public.json \
+	datasets_public/public/AnsweredQuestions/dataset_code_public.json --k 10
 
 install:
 	@uv sync
 
 debug: install
-	@uv run python -m pdb src/__main__.py
+	@uv run python -m pdb src/__main__.py $(OP)
 
 clean:
 	@find \( -name "__pycache__" -o -name ".mypy_cache" \) -prune -exec rm -rf {} \;

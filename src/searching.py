@@ -40,6 +40,12 @@ def load_src_and_ret() -> tuple[list[MinimalSource], bm25s.BM25]:
 
 
 def search(query: str, k: int) -> list[MinimalSource]:
+    if (k <= 0):
+        print_e("Invalid K Value", None,
+                "K should be greater than zero")
+    elif (query == ""):
+        print_e("Invalid Query", None,
+                "Query can't be empty")
     sources, retriever = load_src_and_ret()
     top_sources = search_query(query, k, retriever, sources)
     return top_sources
@@ -50,6 +56,12 @@ def search_query(query: str, k: int,
                  sources: list[MinimalSource]) -> list[MinimalSource]:
     query_tokens = bm25s.tokenize(query)
     docs, scores = retriever.retrieve(query_tokens, k=k)
+    score_list = scores.flatten().tolist()
+    if (max(score_list) <= 0.1):
+        return [MinimalSource(file_path="Unknown",
+                              content="None",
+                              first_character_index=0,
+                              last_character_index=0)]
     top_sources = []
     for doc in docs[0]:
         id_ = doc["id"]
@@ -58,6 +70,9 @@ def search_query(query: str, k: int,
 
 
 def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
+    if (k <= 0):
+        print_e("Invalid K Value", None,
+                "K should be greater than zero")
     save_file = save_dir + dataset_path[dataset_path.rfind("/") + 1:]
     try:
         with open(dataset_path, "r") as f:
@@ -68,6 +83,11 @@ def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
                 questions_dict = json.loads(content)["rag_questions"]
                 questions = []
                 for q in questions_dict:
+                    if q["question"] == "":
+                        print("Questions can't be empty, " +
+                              f"question {q["question_id"]} is skipped")
+                        continue
+
                     questions.append(UnansweredQuestion(
                         question_id=q["question_id"],
                         question=q["question"]))
