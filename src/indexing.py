@@ -6,6 +6,7 @@ try:
     from langchain_text_splitters import (RecursiveCharacterTextSplitter,
                                           Language)
     from tqdm import tqdm
+    from utils import print_e
     import bm25s
     import json
     from models import MinimalSource
@@ -26,8 +27,6 @@ class FileType(Enum):
 def find_files() -> dict[str, list[str]]:
     """Find all .py,.md,.txt,.sh files starting from the root directory
 
-    Args:
-        None
     Returns:
         dict[str, list[str]]: each file type is associated with its
             corresponding file paths
@@ -38,6 +37,8 @@ def find_files() -> dict[str, list[str]]:
     py_files = []
     sh_files = []
     root_dir = "data/raw"
+    if (not Path(root_dir).is_dir()):
+        print_e("Raw Data Not Found", None, "Try make prepare")
     try:
         for root, dirs, files in os.walk(root_dir):
             for file in files:
@@ -59,6 +60,8 @@ def find_files() -> dict[str, list[str]]:
                   FileType.MD.value: md_files,
                   FileType.TXT.value: txt_files,
                   FileType.SH.value: sh_files}
+    if (not max([len(x) for x in file_paths.values()])):
+        print_e("No Files Found", None, f"No found under {root_dir}")
     return file_paths
 
 
@@ -67,8 +70,6 @@ def index(max_chunk_size: int = 2000) -> None:
 
     Args:
         max_chunk_size: maximum limit for chunk length
-    Returns:
-        None
     """
     sources = indexed(max_chunk_size)
     print(f"Ingestion complete! Indexed {len(sources)}" +
