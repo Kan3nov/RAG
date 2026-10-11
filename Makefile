@@ -29,7 +29,6 @@ debug: install
 
 clean:
 	@find \( -name "__pycache__" -o -name ".mypy_cache" \) -prune -exec rm -rf {} \;
-	@rm -rf data/output
 
 lint:
 	@flake8 src/ && mypy src/ --warn-return-any --warn-unused-ignores \

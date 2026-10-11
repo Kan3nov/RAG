@@ -1,6 +1,7 @@
 try:
     from pydantic import BaseModel, Field
     from uuid import uuid4
+    from typing import Optional
 except Exception as e:
     print("=" * 5, "Import Error", "=" * 5)
     print(e)
@@ -9,11 +10,11 @@ except Exception as e:
 
 class MinimalSource(BaseModel):
     file_path: str
-    content: str = None
+    content: Optional[str] = None
     first_character_index: int
     last_character_index: int
 
-    def __str__(self):
+    def __str__(self) -> str:
         return (self.file_path +
                 f" [{self.first_character_index}:{self.last_character_index}]")
 

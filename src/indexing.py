@@ -21,7 +21,7 @@ class FileType(Enum):
     SH = "SHELL"
 
 
-def find_files() -> dict[str: list[str]]:
+def find_files() -> dict[str, list[str]]:
 
     md_files = []
     txt_files = []
@@ -76,7 +76,7 @@ def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
     return sources
 
 
-def chunk(max_chunk_size: int, **files) -> list[MinimalSource]:
+def chunk(max_chunk_size: int, **files: list[str]) -> list[MinimalSource]:
     sources = []
 
     pbar = tqdm(total=sum([len(x) for x in files.values()]),

@@ -10,7 +10,7 @@ except Exception as e:
     exit()
 
 
-def calc_recall(answer: MinimalSource, results: list[MinimalSource]):
+def calc_recall(answer: MinimalSource, results: list[MinimalSource]) -> int:
     for source in results:
         diff = min(answer.last_character_index,
                    source.last_character_index) - \
@@ -26,7 +26,7 @@ def calc_recall(answer: MinimalSource, results: list[MinimalSource]):
     return 0
 
 
-def evaluate(std_search_res_path: str, dataset_path: str):
+def evaluate(std_search_res_path: str, dataset_path: str) -> float:
     try:
         with open(std_search_res_path, 'r') as f:
             content = f.read()

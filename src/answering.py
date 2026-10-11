@@ -36,7 +36,7 @@ def answer(query: str, k: int) -> str:
 
 
 def answered(query: str, top_sources: list[MinimalSource], tokenizer: Any,
-             model: TextGenerationPipeline):
+             model: TextGenerationPipeline) -> str:
     if (top_sources[0].content == "None"):
         return "Nonsensical query. Don't do that again !!"
 
@@ -52,7 +52,7 @@ def answered(query: str, top_sources: list[MinimalSource], tokenizer: Any,
         prompt_tokens = tokenizer(prompt)["input_ids"]
         prompt = tokenizer.decode(prompt_tokens[:30_768])
 
-    response = model(prompt)[0]["generated_text"][len(prompt) + 1:]
+    response: str = model(prompt)[0]["generated_text"][len(prompt) + 1:]
     response = response if response[0] != "\n" else response[1:]
     return response
 
