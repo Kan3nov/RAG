@@ -1,6 +1,7 @@
 # User-defined
 test.py
 .vscode
+data+moulinette.tar.xz
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
