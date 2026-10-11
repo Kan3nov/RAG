@@ -16,12 +16,16 @@ except Exception as e:
 class FileType(Enum):
     PY = "PYTHON"
     MD = "MARKDOWN"
+    TXT = "TEXT"
+    SH = "SHELL"
 
 
 def find_files() -> dict[str: list[str]]:
 
     md_files = []
+    txt_files = []
     py_files = []
+    sh_files = []
     root_dir = "data/raw"
     try:
         for root, dirs, files in os.walk(root_dir):
@@ -31,13 +35,19 @@ def find_files() -> dict[str: list[str]]:
                     py_files.append(file_path)
                 elif (Path(file_path).suffix == ".md"):
                     md_files.append(file_path)
+                elif (Path(file_path).suffix == ".txt"):
+                    txt_files.append(file_path)
+                elif (Path(file_path).suffix == ".sh"):
+                    sh_files.append(file_path)
     except Exception as e:
         print("=" * 5, "Error Finding Files", "=" * 5)
         print(e)
         exit()
 
     file_paths = {FileType.PY.value: py_files,
-                  FileType.MD.value: md_files}
+                  FileType.MD.value: md_files,
+                  FileType.TXT.value: txt_files,
+                  FileType.SH.value: sh_files}
     return file_paths
 
 
@@ -75,6 +85,11 @@ def chunk(max_chunk_size: int, **files) -> list[MinimalSource]:
     splitter = RecursiveCharacterTextSplitter.from_language(
         language=Language.PYTHON, chunk_size=max_chunk_size, chunk_overlap=0)
     sources.extend(create_sources(files[FileType.PY.value], splitter))
+    sources.extend(create_sources(files[FileType.SH.value], splitter))
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=max_chunk_size,
+                                              chunk_overlap=0)
+    sources.extend(create_sources(files[FileType.TXT.value], splitter))
 
     return sources
 

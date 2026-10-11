@@ -21,7 +21,7 @@ def calc_recall(answer: MinimalSource, results: list[MinimalSource]):
         elif (diff <= 0):
             continue
         elif (diff >= 0.05 *
-              (answer.last_character_index - answer.first_character_index)):
+              (source.last_character_index - source.first_character_index)):
             return 1
     return 0
 
