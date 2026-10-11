@@ -15,17 +15,13 @@ except Exception as e:
 
 class FileType(Enum):
     PY = "PYTHON"
-    TXT = "TEXT"
     MD = "MARKDOWN"
-    SH = "BASH"
 
 
 def find_files() -> dict[str: list[str]]:
 
     md_files = []
     py_files = []
-    sh_files = []
-    txt_files = []
     root_dir = "data/raw"
     try:
         for root, dirs, files in os.walk(root_dir):
@@ -35,19 +31,13 @@ def find_files() -> dict[str: list[str]]:
                     py_files.append(file_path)
                 elif (Path(file_path).suffix == ".md"):
                     md_files.append(file_path)
-                elif (Path(file_path).suffix == ".sh"):
-                    sh_files.append(file_path)
-                elif (Path(file_path).suffix == ".txt"):
-                    txt_files.append(file_path)
     except Exception as e:
         print("=" * 5, "Error Finding Files", "=" * 5)
         print(e)
         exit()
 
     file_paths = {FileType.PY.value: py_files,
-                  FileType.MD.value: md_files,
-                  FileType.SH.value: sh_files,
-                  FileType.TXT.value: txt_files}
+                  FileType.MD.value: md_files}
     return file_paths
 
 
@@ -103,16 +93,16 @@ def create_sources(files: list[str],
             print(e)
             exit()
 
-        md_docs = splitter.create_documents([content])
-        for doc in md_docs:
-            lst_idx = idx + len(doc.page_content) - 1
-            if content[idx: lst_idx + 1] == "":
-                idx += lst_idx + 1
+        docs = splitter.create_documents([content])
+        for doc in docs:
+            lst_idx = idx + len(doc.page_content)
+            if content[idx: lst_idx] == "":
+                idx = lst_idx + 1
                 continue
             source = MinimalSource(file_path=file,
-                                   content=content[idx: lst_idx + 1],
+                                   content=content[idx: lst_idx],
                                    first_character_index=idx,
                                    last_character_index=lst_idx)
             sources.append(source)
-            idx += lst_idx + 1
+            idx = lst_idx + 1
     return sources

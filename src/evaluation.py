@@ -46,8 +46,6 @@ def evaluate(std_search_res_path: str, dataset_path: str):
         print_e("Error Reading Answered Questions Path", e,
                 "Try Searching Sources Before")
     recall = 0
-    print(len(search_ans))
-    print(len(std_search_res.search_results))
     for answer, res in zip(search_ans, std_search_res.search_results):
         recall += calc_recall(answer.sources[0], res.retrieved_sources)
-    return (recall / len(search_ans))
+    return (round(recall / len(search_ans), 2))

@@ -3,6 +3,9 @@ vpath %.py src
 SCRIPT := uv run python -m src
 
 dataset_path ?= datasets_public/public/UnansweredQuestions/dataset_code_public.json
+
+answer_dataset_path ?= datasets_public/public/AnsweredQuestions/dataset_code_public.json
+
 k ?= 5
 search_save_dir ?= data/output/search_results/UnansweredQuestions/
 
@@ -10,7 +13,7 @@ query ?= "How to configure the OpenAI server?"
 max_chunk_size ?= 2000
 
 student_search_results_path ?= data/output/search_results/UnansweredQuestions/dataset_code_public.json
-answer_save_dir ?= data/datasets/AnsweredQuestions/
+answer_save_dir ?= data/output/search_results_and_answer/UnansweredQuestions/
 
 all: run
 
@@ -30,6 +33,7 @@ clean:
 lint:
 	@flake8 src/ && mypy src/ --warn-return-any --warn-unused-ignores \
 	--ignore-missing-imports --disallow-untyped-defs --check-untyped-defs --follow-imports=skip
+
 index:
 	$(SCRIPT) index --max_chunk_size $(max_chunk_size)
 
@@ -44,3 +48,6 @@ answer:
 
 answer_dataset:
 	$(SCRIPT) answer_dataset --std_search_res_path $(student_search_results_path) --save_dir $(answer_save_dir)
+
+evaluate:
+	$(SCRIPT) evaluate --std_search_res_path $(student_search_results_path) --dataset_path $(answer_dataset_path)
