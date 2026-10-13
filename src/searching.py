@@ -97,7 +97,7 @@ def search_query(query: str, k: int,
     return top_sources
 
 
-def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
+def search_dataset(dataset_path: str, k: int, save_directory: str) -> None:
     """Search every question in a dataset and save the results as JSON.
 
     Args:
@@ -108,7 +108,8 @@ def search_dataset(dataset_path: str, k: int, save_dir: str) -> None:
     if (k <= 0):
         print_e("Invalid K Value", None,
                 "K should be greater than zero")
-    save_file = save_dir + dataset_path[dataset_path.rfind("/") + 1:]
+    save_file = save_directory + "/" + \
+        dataset_path[dataset_path.rfind("/") + 1:]
     try:
         with open(dataset_path, "r") as f:
             content = f.read()

@@ -17,7 +17,6 @@ except Exception as e:
 
 class FileType(Enum):
     """Supported source file categories for indexing."""
-
     PY = "PYTHON"
     MD = "MARKDOWN"
     TXT = "TEXT"
@@ -38,7 +37,8 @@ def find_files() -> dict[str, list[str]]:
     sh_files = []
     root_dir = "data/raw"
     if (not Path(root_dir).is_dir()):
-        print_e("Raw Data Not Found", None, "Try make prepare")
+        print_e("Raw Data Not Found", None,
+                "Check files under dara/raw")
     try:
         for root, dirs, files in os.walk(root_dir):
             for file in files:
@@ -60,8 +60,6 @@ def find_files() -> dict[str, list[str]]:
                   FileType.MD.value: md_files,
                   FileType.TXT.value: txt_files,
                   FileType.SH.value: sh_files}
-    if (not max([len(x) for x in file_paths.values()])):
-        print_e("No Files Found", None, f"No found under {root_dir}")
     return file_paths
 
 
@@ -88,16 +86,23 @@ def indexed(max_chunk_size: int = 2000) -> list[MinimalSource]:
     sources = chunk(max_chunk_size, **file_paths)
     corpus = [src.content for src in sources]
 
-    retriever = bm25s.BM25(corpus=corpus)
-    retriever.index(bm25s.tokenize(corpus))
-    index_files = Path(index_dir)
-    index_files.parent.mkdir(parents=True, exist_ok=True)
-    retriever.save(index_files)
-    sources_json = json.dumps(
-        [src.model_dump(mode="json") for src in sources], indent=4
-        )
-    with open(sources_file, "w") as f:
-        f.write(sources_json)
+    try:
+        retriever = bm25s.BM25(corpus=corpus)
+        retriever.index(bm25s.tokenize(corpus))
+        index_files = Path(index_dir)
+        index_files.parent.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        print_e("Error Indexing Corpus", e,
+                "Check files under data/raw")
+    try:
+        retriever.save(index_files)
+        sources_json = json.dumps(
+            [src.model_dump(mode="json") for src in sources], indent=4
+            )
+        with open(sources_file, "w") as f:
+            f.write(sources_json)
+    except Exception as e:
+        print_e("Error Saving Index", e)
     return sources
 
 
@@ -110,21 +115,27 @@ def chunk(max_chunk_size: int, **files: list[str]) -> list[MinimalSource]:
     Returns:
         list[MinimalSource]: all chunked sources
     """
+    if (sum([len(x) for x in files.values()]) == 0):
+        print_e("Corpus Error", None,
+                "Ensure that relevant files exist under data/raw")
     sources = []
+    overlap = int(0.2 * max_chunk_size)
 
     pbar = tqdm(total=sum([len(x) for x in files.values()]),
                 desc="Files chunking", unit="file")
     splitter = RecursiveCharacterTextSplitter.from_language(
-        language=Language.MARKDOWN, chunk_size=max_chunk_size, chunk_overlap=0)
+        language=Language.MARKDOWN, chunk_size=max_chunk_size,
+        chunk_overlap=overlap)
     sources.extend(create_sources(files[FileType.MD.value], splitter, pbar))
 
     splitter = RecursiveCharacterTextSplitter.from_language(
-        language=Language.PYTHON, chunk_size=max_chunk_size, chunk_overlap=0)
+        language=Language.PYTHON, chunk_size=max_chunk_size,
+        chunk_overlap=overlap)
     sources.extend(create_sources(files[FileType.PY.value], splitter, pbar))
     sources.extend(create_sources(files[FileType.SH.value], splitter, pbar))
 
     splitter = RecursiveCharacterTextSplitter(chunk_size=max_chunk_size,
-                                              chunk_overlap=0)
+                                              chunk_overlap=overlap)
     sources.extend(create_sources(files[FileType.TXT.value], splitter, pbar))
     pbar.close()
     return sources
